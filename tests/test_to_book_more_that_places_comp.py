@@ -1,5 +1,5 @@
 import server
-from server import app, loadCompetitions
+from server import app
 
 
 
