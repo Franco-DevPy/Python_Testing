@@ -10,6 +10,6 @@ def reset_data():
 
     yield  
 
-   
+
     server.clubs = original_clubs
     server.competitions = original_competitions

@@ -1,0 +1,28 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Display | GUDLFT</title>     
+</head>
+<body>
+    <h3>Club Points Board</h3>
+    <a href="{{url_for('logout')}}">Logout</a>
+    <h4>Club Details:</h4>
+    {% for club in clubs %}
+    
+    <table border="1">
+        <tr>
+            <th>Club Name</th>
+            <th>Points</th>
+        </tr>
+        <tr>
+            <td>{{club['name']}}</td>
+            <td>{{club['points']}}</td>
+        </tr>
+    </table>
+    {% endfor %}
+
+
+
+
+</html>

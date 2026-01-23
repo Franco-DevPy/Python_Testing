@@ -25,6 +25,13 @@ clubs = loadClubs()
 def index():
     return render_template('index.html')
 
+@app.route('/displayBoard',methods=['GET'])
+def displayBoard():
+
+    clubs_sorted = sorted(clubs, key=lambda x: x['points'], reverse=True)
+
+    return render_template('displayBoard.html',clubs=clubs_sorted)
+
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
 
