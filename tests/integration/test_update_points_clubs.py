@@ -16,12 +16,12 @@ def test_update_points_clubs():
             club["points"] = "10"
 
     for comp in competitions:
-        if comp["name"] == "Spring Festival":
+        if comp["name"] == "Winter Cup":
             comp["numberOfPlaces"] = "5"
             break
 
     response = client.post('/purchasePlaces', data={
-        'competition': 'Spring Festival',
+        'competition': 'Winter Cup',
         'club': 'Iron Temple',
         'places': "3"
     })
