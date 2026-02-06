@@ -1,21 +1,25 @@
+from unittest import mock
 from server import app
+import server
+from tests.mocks.fake_clubs import FAKE_CLUBS
+from tests.mocks.fake_competitions import FAKE_COMPETITIONS
 
-def test_cannot_purchase_more_places_than_points(reset_data):
+
+@mock.patch("server.clubs", FAKE_CLUBS)
+@mock.patch("server.competitions", FAKE_COMPETITIONS)
+def test_cannot_purchase_more_places_than_points():
+
     app.config["TESTING"] = True
-
     client = app.test_client()
-    purchasePlaces = client.post('/purchasePlaces', data={
-        'competition': 'Spring Festival',
-        'club': 'Iron Temple',
-        'places': "15"
-    })
 
+    response = client.post(
+        "/purchasePlaces",
+        data={
+            "competition": "Competition Large Future",
+            "club": "Club Low Points",
+            "places": "10"
+        },
+    )
 
-
-
-    assert b"Great-booking complete!" not in purchasePlaces.data
-    assert b"You cannot book more places than you have points." in purchasePlaces.data
-
-
-
-
+    assert b"Great-booking complete!" not in response.data
+    assert b"You cannot book more places than you have points." in response.data

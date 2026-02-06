@@ -1,14 +1,19 @@
+from unittest.mock import patch
 import server
 from server import app
 
-def test_cannot_book_past_competition(reset_data):
+from tests.mocks.fake_clubs import FAKE_CLUBS
+from tests.mocks.fake_competitions import FAKE_COMPETITIONS
+
+
+@patch("server.clubs", FAKE_CLUBS)
+@patch("server.competitions", FAKE_COMPETITIONS)
+def test_cannot_book_past_competition():
+
     app.config['TESTING'] = True
     client = app.test_client()
-    competition = [comp for comp in server.competitions if comp["name"] == "Fall Classic"][0]
-    competition["date"] = "2022-01-01 10:00:00" 
-    
-    response = client.get("/book/Fall%20Classic/Simply%20Lift")
 
+    response = client.get("/book/Competition%20Past/Club%20High%20Points")
 
     assert b"How many places?" not in response.data
     assert b"You cannot book places for past competitions." in response.data

@@ -1,7 +1,12 @@
-import server
+from unittest import mock
 from server import app
 
-def test_points_display_board(reset_data):
+from tests.mocks.fake_clubs import FAKE_CLUBS
+
+
+@mock.patch("server.clubs", FAKE_CLUBS)
+def test_points_display_board():
+
     app.config["TESTING"] = True
     client = app.test_client()
 
