@@ -15,6 +15,21 @@ def loadCompetitions():
          return listOfCompetitions
     
 
+# Limit 12 places per club
+def get_club_booking(competition, club_id):
+    for booking in competition.get("bookings", []):
+        if booking["club_id"] == club_id:
+            return booking
+    return None
+
+def get_total_booked_places(competition, club_id):
+    booking = get_club_booking(competition, club_id)
+    if booking:
+        return booking["places"]
+    return 0
+
+
+
 
 MESSAGES = {
     "OK": "Great-booking complete!",
@@ -23,22 +38,47 @@ MESSAGES = {
     "TOO_MANY_PLACES": "You cannot book more than 12 places per competition.",
     "PAST_COMPETITION": "You cannot book places for past competitions.",
     "EMAIL_NOT_FOUND": "Email not found.",
-    "NEGATIVE_PLACES": "You cannot book a negative number of places."
+    "NEGATIVE_PLACES": "You cannot book a negative number of places.",
+    "TOTAL_BOOKING_LIMIT_EXCEEDED": "You cannot book more than 12 places total for this competition."
+
 }
 
 
-def validate_booking(placesRequired, club_points, competition_places, competition_date):
+def validate_booking(
+    placesRequired,
+    club_points,
+    competition_places,
+    competition_date,
+    club_id=None,
+    competition=None
+):
+
     if placesRequired <= 0:
         return "NEGATIVE_PLACES"
+
     if datetime.strptime(competition_date, "%Y-%m-%d %H:%M:%S") < datetime.now():
         return "PAST_COMPETITION"
-    if placesRequired > club_points:
-        return "NOT_ENOUGH_POINTS"
-    if placesRequired > 12:
-        return "TOO_MANY_PLACES"
+
     if placesRequired > competition_places:
         return "NOT_ENOUGH_PLACES"
+
+    if placesRequired > club_points:
+        return "NOT_ENOUGH_POINTS"
+
+    if placesRequired > 12:
+        return "TOO_MANY_PLACES"
+
+    already_booked = 0
+    if competition is not None and club_id is not None:
+        already_booked = get_total_booked_places(competition, club_id)
+
+    if already_booked + placesRequired > 12:
+        return "TOTAL_BOOKING_LIMIT_EXCEEDED"
+
     return "OK"
+
+
+
     
         
 
@@ -58,7 +98,7 @@ def index():
 @app.route('/displayBoard',methods=['GET'])
 def displayBoard():
 
-    clubs_sorted = sorted(clubs, key=lambda x: x['points'], reverse=True)
+    clubs_sorted = sorted(clubs, key=lambda x: int(x['points']), reverse=True)
 
     return render_template('displayBoard.html',clubs=clubs_sorted)
 
@@ -106,26 +146,49 @@ def book(competition,club):
 
 @app.route('/purchasePlaces',methods=['POST'])
 def purchasePlaces():
+
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
+
     placesRequired = int(request.form['places'])
+
     competition_date = competition['date']
     points_club = int(club['points'])
     places_competition = int(competition['numberOfPlaces'])
 
-    validation_result = validate_booking(placesRequired, points_club, places_competition, competition_date)
+    club_id = club['id']
+
+    validation_result = validate_booking(
+        placesRequired,
+        points_club,
+        places_competition,
+        competition_date,
+        club_id=club_id,
+        competition=competition
+    )
 
     if validation_result != "OK":
         flash(MESSAGES[validation_result])
         return render_template('welcome.html', club=club, competitions=competitions)
-  
 
-    # FEATURE : update points and places
+    # SAVE BOOKING
+    booking = get_club_booking(competition, club_id)
+
+    if booking:
+        booking["places"] += placesRequired
+    else:
+        competition.setdefault("bookings", []).append({
+            "club_id": club_id,
+            "places": placesRequired
+        })
+
+    # UPDATE DATA
     club['points'] = int(club['points']) - placesRequired
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
 
     flash(MESSAGES["OK"])
     return render_template('welcome.html', club=club, competitions=competitions)
+
 
 
 # TODO: Add route for points display
