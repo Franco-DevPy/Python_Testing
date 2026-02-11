@@ -14,6 +14,17 @@ def loadCompetitions():
          listOfCompetitions = json.load(comps)['competitions']
          return listOfCompetitions
     
+# Save Data
+
+def saveClubs(clubs):
+    with open("clubs.json", "w") as f:
+        json.dump({"clubs": clubs}, f, indent=4)
+
+def saveCompetitions(competitions):
+    with open("competitions.json", "w") as f:
+        json.dump({"competitions": competitions}, f, indent=4)
+
+    
 
 
 MESSAGES = {
@@ -40,7 +51,11 @@ def validate_booking(placesRequired, club_points, competition_places, competitio
         return "NOT_ENOUGH_PLACES"
     return "OK"
     
-        
+
+def add_competition_flags(competitions):
+    for comp in competitions:
+        comp_date = datetime.strptime(comp["date"], "%Y-%m-%d %H:%M:%S")
+        comp["is_past"] = comp_date < datetime.now()   
 
 
 app = Flask(__name__)
@@ -79,6 +94,10 @@ def showSummary():
         flash("Email not found.")
         return redirect(url_for('index'))
     
+
+    add_competition_flags(competitions)
+
+ 
     return render_template('welcome.html',club=matching_club,competitions=competitions)
 
 
@@ -124,6 +143,9 @@ def purchasePlaces():
     club['points'] = int(club['points']) - placesRequired
     competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
 
+
+    saveClubs(clubs)
+    saveCompetitions(competitions)
     flash(MESSAGES["OK"])
     return render_template('welcome.html', club=club, competitions=competitions)
 
