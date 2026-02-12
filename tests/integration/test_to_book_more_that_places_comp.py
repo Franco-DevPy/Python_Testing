@@ -5,10 +5,11 @@ from tests.mocks.fake_competitions import FAKE_COMPETITIONS
 from tests.mocks.fake_clubs import FAKE_CLUBS
     
 
-
+@mock.patch("server.saveCompetitions")
+@mock.patch("server.saveClubs")
 @mock.patch('server.competitions', FAKE_COMPETITIONS)
 @mock.patch('server.clubs', FAKE_CLUBS)
-def test_cannot_purchase_more_places_than_competition_allows():
+def test_cannot_purchase_more_places_than_competition_allows(   saveClubs, saveCompetitions):
 
     app.config["TESTING"] = True
 

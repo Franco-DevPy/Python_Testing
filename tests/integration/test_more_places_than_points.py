@@ -4,10 +4,11 @@ import server
 from tests.mocks.fake_clubs import FAKE_CLUBS
 from tests.mocks.fake_competitions import FAKE_COMPETITIONS
 
-
+@mock.patch("server.saveCompetitions")
+@mock.patch("server.saveClubs")
 @mock.patch("server.clubs", FAKE_CLUBS)
 @mock.patch("server.competitions", FAKE_COMPETITIONS)
-def test_cannot_purchase_more_places_than_points():
+def test_cannot_purchase_more_places_than_points(   saveClubs, saveCompetitions):
 
     app.config["TESTING"] = True
     client = app.test_client()

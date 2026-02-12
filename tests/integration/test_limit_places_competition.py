@@ -5,9 +5,11 @@ from tests.mocks.fake_clubs import FAKE_CLUBS
 from tests.mocks.fake_competitions import FAKE_COMPETITIONS
 
 
+@mock.patch("server.saveCompetitions")
+@mock.patch("server.saveClubs")
 @mock.patch("server.clubs", FAKE_CLUBS)
 @mock.patch("server.competitions", FAKE_COMPETITIONS)
-def test_limit_places_competition():
+def test_limit_places_competition(saveClubs, saveCompetitions):
 
     app.config["TESTING"] = True
     client = app.test_client()
